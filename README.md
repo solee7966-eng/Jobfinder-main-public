@@ -11,7 +11,9 @@
 [![AWS](https://img.shields.io/badge/AWS-EC2-FF9900?style=flat-square&logo=amazonaws)](https://aws.amazon.com)
 
 **개발 기간** | 2026.02.24 ~ 2026.03.31
+
 **팀 구성** | 4인 팀 프로젝트
+
 **담당 역할** | 기업 기능 전체, 포인트 결제 시스템, 공고 자동 동기화
 
 🔗 **[배포 사이트 바로가기](http://52.78.3.125/user-service/index)** &nbsp;|&nbsp; 📄 **[API 명세 (Swagger)](http://52.78.3.125/user-service/swagger-ui/index.html#/)** &nbsp;|&nbsp; 🎨 **[Figma 화면설계](https://www.figma.com/make/tgAE5O7dx4tSwYLV9V70V2/JobFinder_%EA%B8%B0%EC%97%85%EB%8C%80%EC%8B%9C%EB%B3%B4%EB%93%9C_%EC%B5%9C%EC%A2%85%EB%B3%B8?t=wGpxEN9KR83A2Pvn-1)**
