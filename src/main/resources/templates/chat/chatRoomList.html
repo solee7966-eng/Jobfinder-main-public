@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅방 목록</title>
+    <style>
+	    body {
+	        margin: 0;
+	        padding: 0;
+	        font-family: Arial, sans-serif;
+	        background-color: #f4f6f8;
+	        color: #222;
+	    }
+	
+	    .chat-list-wrap {
+	        width: 900px;
+	        margin: 40px auto;
+	        background-color: #fff;
+	        border: 1px solid #e5e8eb;
+	        border-radius: 16px;
+	        padding: 28px;
+	        box-sizing: border-box;
+	        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+	    }
+	
+	    .chat-list-header {
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: center;
+	        gap: 16px;
+	        margin-bottom: 28px;
+	        padding-bottom: 20px;
+	        border-bottom: 1px solid #eef0f2;
+	    }
+	
+	    .chat-title-area {
+	        flex: 1;
+	    }
+	
+	    .chat-title-area h2 {
+	        margin: 0;
+	        font-size: 26px;
+	        font-weight: 700;
+	        color: #111;
+	    }
+	
+	    .chat-title-area p {
+	        margin: 6px 0 0;
+	        font-size: 14px;
+	        color: #777;
+	    }
+	
+	    .back-btn,
+	    .refresh-btn {
+	        border: none;
+	        background-color: #f1f3f5;
+	        color: #333;
+	        border-radius: 10px;
+	        padding: 10px 14px;
+	        cursor: pointer;
+	        font-size: 14px;
+	        transition: background-color 0.2s ease;
+	    }
+	
+	    .back-btn:hover,
+	    .refresh-btn:hover {
+	        background-color: #e2e6ea;
+	    }
+	
+	    .chat-room-list {
+	        display: flex;
+	        flex-direction: column;
+	        gap: 14px;
+	    }
+	
+	    .chat-room-item {
+	        display: flex;
+	        align-items: center;
+	        gap: 14px;
+	        border: 1px solid #e5e8eb;
+	        border-radius: 14px;
+	        padding: 18px;
+	        cursor: pointer;
+	        background-color: #fff;
+	        transition: all 0.2s ease;
+	    }
+	
+	    .chat-room-item:hover {
+	        background-color: #f8fafc;
+	        transform: translateY(-1px);
+	        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05);
+	    }
+	
+	    .chat-avatar {
+	        width: 48px;
+	        height: 48px;
+	        border-radius: 50%;
+	        background-color: #e8f0fe;
+	        color: #2563eb;
+	        display: flex;
+	        align-items: center;
+	        justify-content: center;
+	        font-weight: 700;
+	        flex-shrink: 0;
+	    }
+	
+	    .chat-room-content {
+	        flex: 1;
+	        min-width: 0;
+	    }
+	
+	    .chat-room-top {
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: center;
+	        margin-bottom: 6px;
+	        gap: 12px;
+	    }
+	
+	    .chat-opponent-name {
+	        font-size: 16px;
+	        font-weight: 700;
+	        color: #222;
+	    }
+	
+	    .chat-last-time {
+	        font-size: 12px;
+	        color: #999;
+	        white-space: nowrap;
+	    }
+	
+	    .chat-room-bottom {
+	        display: flex;
+	        justify-content: space-between;
+	        align-items: center;
+	        gap: 12px;
+	    }
+	
+	    .chat-last-message {
+	        color: #666;
+	        font-size: 14px;
+	        overflow: hidden;
+	        text-overflow: ellipsis;
+	        white-space: nowrap;
+	        min-width: 0;
+	    }
+	
+	    .chat-unread {
+	        min-width: 22px;
+	        height: 22px;
+	        padding: 0 7px;
+	        border-radius: 999px;
+	        background-color: #ff4d4f;
+	        color: #fff;
+	        font-size: 12px;
+	        font-weight: 700;
+	        display: inline-flex;
+	        justify-content: center;
+	        align-items: center;
+	        box-sizing: border-box;
+	        flex-shrink: 0;
+	    }
+	
+	    .chat-room-meta {
+	        display: inline-block;
+	        margin-bottom: 4px;
+	        font-size: 12px;
+	        color: #888;
+	    }
+	
+	    .empty-room {
+	        text-align: center;
+	        color: #777;
+	        padding: 70px 20px;
+	        border: 1px dashed #d8dde3;
+	        border-radius: 14px;
+	        background-color: #fafbfc;
+	        line-height: 1.6;
+	    }
+	
+	    .empty-room strong {
+	        display: block;
+	        margin-bottom: 6px;
+	        font-size: 16px;
+	        color: #333;
+	    }
+	</style>
+</head>
+<body>
+
+
+<input type="hidden" id="loginMemberId" th:value="${loginMemberId}">
+<div class="chat-list-wrap">
+    <div class="chat-list-header">
+	    <button type="button" class="back-btn" onclick="goBack()">←</button>
+	
+	    <div class="chat-title-box">
+	        <h2>채팅</h2>
+	        <p>지원과 관련된 대화를 확인할 수 있습니다.</p>
+	    </div>
+	
+	    <button type="button" class="refresh-btn" onclick="loadChatRoomList()">새로고침</button>
+	</div>
+
+    <div id="chatRoomList" class="chat-room-list">
+        <!-- JS 렌더링 -->
+    </div>
+</div>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+	let stompClient = null;
+	let loginMemberId = null;
+
+	document.addEventListener("DOMContentLoaded", function () {
+	    loginMemberId = document.getElementById("loginMemberId").value;
+
+	    loadChatRoomList();
+	    connectWebSocket();
+	});
+
+    
+    async function loadChatRoomList() {
+        try {
+            const response = await fetch("/user-service/api/chat/rooms", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error("채팅방 목록 조회 실패");
+            }
+
+            const roomList = await response.json();
+            renderChatRoomList(roomList);
+        } catch (error) {
+            console.error(error);
+            document.getElementById("chatRoomList").innerHTML = `
+                <div class="empty-room">
+                    <strong>채팅방 목록을 불러오지 못했습니다.</strong>
+                    잠시 후 다시 시도해주세요.
+                </div>
+            `;
+        }
+    }
+    
+    
+    function connectWebSocket() {
+        const socket = new SockJS("/user-service/ws-chat");
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            // 로그인 사용자별 채팅방 목록 갱신 구독
+            stompClient.subscribe("/topic/chat/rooms/" + loginMemberId, function (message) {
+                const room = JSON.parse(message.body);
+                updateChatRoomItem(room);
+            });
+
+        }, function (error) {
+            console.error("채팅방 목록 WebSocket 연결 실패", error);
+        });
+    }
+
+    
+    function renderChatRoomList(roomList) {
+        const container = document.getElementById("chatRoomList");
+        container.innerHTML = "";
+
+        if (!roomList || roomList.length === 0) {
+            container.innerHTML = `
+                <div class="empty-room">
+                    <strong>아직 채팅방이 없습니다.</strong>
+                    지원 관련 대화가 시작되면 이곳에 표시됩니다.
+                </div>
+            `;
+            return;
+        }
+
+        roomList.forEach(room => {
+            container.insertAdjacentHTML("beforeend", createChatRoomItemHtml(room));
+        });
+    }
+    
+    
+    function createChatRoomItemHtml(room) {
+        const opponentName = room.opponentName || "상대방";
+        const firstLetter = opponentName.substring(0, 1);
+        const lastMessage = room.lastMessage || "아직 메시지가 없습니다.";
+        const lastTime = room.lastMessageAt || "";
+        const unreadCount = Number(room.unreadCount || 0);
+        const jobTitle = room.jobTitle || "지원 관련 대화";
+
+        return `
+            <div class="chat-room-item" data-room-id="${room.roomId}" onclick="moveChatRoom(${room.roomId})">
+                <div class="chat-avatar">
+                    ${escapeHtml(firstLetter)}
+                </div>
+
+                <div class="chat-room-content">
+                    <div class="chat-room-top">
+                        <span class="chat-opponent-name">${escapeHtml(opponentName)}</span>
+                        <span class="chat-last-time">${escapeHtml(lastTime)}</span>
+                    </div>
+
+                    <span class="chat-room-meta">${escapeHtml(jobTitle)}</span>
+
+                    <div class="chat-room-bottom">
+                        <span class="chat-last-message">${escapeHtml(lastMessage)}</span>
+                        ${unreadCount > 0 ? `<span class="chat-unread">${unreadCount > 99 ? "99+" : unreadCount}</span>` : ``}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    
+    function updateChatRoomItem(room) {
+        const container = document.getElementById("chatRoomList");
+
+        // empty 문구가 있으면 제거
+        const emptyRoom = container.querySelector(".empty-room");
+        if (emptyRoom) {
+            emptyRoom.remove();
+        }
+
+        // 기존 채팅방 카드가 있으면 제거
+        const oldItem = container.querySelector(`[data-room-id="${room.roomId}"]`);
+        if (oldItem) {
+            oldItem.remove();
+        }
+
+        // 새 카드 생성 후 맨 위에 추가
+        const newItemHtml = createChatRoomItemHtml(room);
+        container.insertAdjacentHTML("afterbegin", newItemHtml);
+    }
+
+    
+    function moveChatRoom(roomId) {
+        location.href = "/user-service/chat/rooms/" + roomId;
+    }
+
+    
+    function escapeHtml(str) {
+        if (!str) return "";
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+    
+    function goBack() {
+        if (document.referrer) {
+            history.back();
+        } else {
+            location.href = "/user-service/";
+        }
+    }
+</script>
+
+</body>
+</html>
